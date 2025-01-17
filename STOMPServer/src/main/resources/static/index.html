@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Demo</title>
+</head>
+<body>
+<h1>WebSocket Chat</h1>
+<div>
+    <input type="text" id="name" placeholder="Enter your name">
+    <button onclick="sendMessage()">Send</button>
+</div>
+<ul id="messages"></ul>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+<script>
+    let stompClient = null;
+
+    // Установка соединения с сервером
+    function connect() {
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function () {
+            console.log('Connected to WebSocket server');
+            stompClient.subscribe('/topic/greetings', function (message) {
+                showMessage(message.body);
+            });
+        });
+    }
+
+    // Отправка сообщения на сервер
+    function sendMessage() {
+        const name = document.getElementById('name').value;
+        stompClient.send('/app/hello', {}, name);
+    }
+
+    // Отображение сообщения
+    function showMessage(message) {
+        const messages = document.getElementById('messages');
+        const li = document.createElement('li');
+        li.appendChild(document.createTextNode(message));
+        messages.appendChild(li);
+    }
+
+    // Подключение при загрузке страницы
+    window.onload = connect;
+</script>
+</body>
+</html>
